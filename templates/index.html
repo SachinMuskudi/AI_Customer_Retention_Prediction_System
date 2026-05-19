@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Telco Churn Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<style>
+
+/* ════════════════════════════════════════════
+   RESET & ROOT
+════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream:     #faf7f2;
+  --cream-mid: #f0ebe0;
+  --brown:     #2c1a0e;
+  --brown-mid: #6b4226;
+  --amber:     #e07b39;
+  --amber-lite:#fdf0e6;
+  --teal:      #0d7377;
+  --teal-lite: #e6f4f4;
+  --rose:      #c0392b;
+  --rose-lite: #fdf1f0;
+  --green:     #1a6b3c;
+  --green-lite:#edf7f1;
+  --sand:      #d4c4a8;
+  --sand-dark: #b8a88a;
+  --ink:       #1a1208;
+  --muted:     #8a7560;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Cabinet Grotesk', sans-serif;
+
+  --radius-sm: 10px;
+  --radius:    18px;
+  --radius-lg: 28px;
+
+  --shadow-card: 0 2px 12px rgba(44,26,14,0.08), 0 1px 4px rgba(44,26,14,0.05);
+  --shadow-lift: 0 8px 32px rgba(44,26,14,0.12), 0 2px 8px rgba(44,26,14,0.06);
+  --shadow-float:0 20px 60px rgba(44,26,14,0.14), 0 4px 16px rgba(44,26,14,0.08);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--brown);
+  min-height: 100vh;
+  font-size: 16px;
+}
+
+/* ════════════════════════════════════════════
+   TOP STRIP
+════════════════════════════════════════════ */
+.topstrip {
+  background: var(--brown);
+  color: var(--cream);
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+.topstrip span { color: var(--amber); }
+
+/* ════════════════════════════════════════════
+   NAVBAR
+════════════════════════════════════════════ */
+nav {
+  background: var(--cream);
+  border-bottom: 1px solid var(--sand);
+  padding: 18px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 200;
+  backdrop-filter: blur(8px);
+}
+
+.nav-brand {
+  display: flex; align-items: center; gap: 14px;
+}
+.nav-brand .brand-mark {
+  width: 46px; height: 46px; border-radius: 12px;
+  background: var(--brown);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(44,26,14,0.25);
+}
+.nav-brand .brand-text h1 {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 900;
+  color: var(--ink); line-height: 1;
+  letter-spacing: -0.02em;
+}
+.nav-brand .brand-text p {
+  font-size: 12px; color: var(--muted);
+  font-weight: 500; letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.nav-pill {
+  background: var(--amber-lite);
+  border: 1px solid var(--amber);
+  border-radius: 20px; padding: 6px 16px;
+  font-size: 13px; font-weight: 700;
+  color: var(--amber); letter-spacing: 0.02em;
+  display: flex; align-items: center; gap: 6px;
+}
+.nav-pill .live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--amber);
+  animation: blink 1.8s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+/* ════════════════════════════════════════════
+   PAGE LAYOUT
+════════════════════════════════════════════ */
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 52px 28px 80px;
+}
+
+/* ════════════════════════════════════════════
+   HERO
+════════════════════════════════════════════ */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: end;
+  margin-bottom: 52px;
+  padding-bottom: 40px;
+  border-bottom: 2px solid var(--sand);
+}
+.hero-left {}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--amber-lite);
+  border: 1px solid var(--amber);
+  border-radius: 6px; padding: 5px 14px;
+  font-size: 12px; font-weight: 700;
+  color: var(--amber); letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 20px;
+}
+.hero h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  font-weight: 900; line-height: 1.08;
+  color: var(--ink); letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+.hero h2 em {
+  font-style: italic; color: var(--amber);
+}
+.hero p {
+  font-size: 17px; color: var(--muted);
+  line-height: 1.75; max-width: 460px;
+}
+.hero-right {
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+}
+.hero-stat {
+  background: var(--brown);
+  color: var(--cream);
+  border-radius: var(--radius-sm);
+  padding: 14px 22px; text-align: right;
+  min-width: 140px;
+}
+.hero-stat .num {
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 900;
+  color: var(--amber); line-height: 1;
+}
+.hero-stat .label {
+  font-size: 11px; letter-spacing: 0.06em;
+  opacity: 0.7; margin-top: 3px;
+}
+
+/* ════════════════════════════════════════════
+   SECTION CARD
+════════════════════════════════════════════ */
+.section-card {
+  background: var(--cream);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 24px;
+  transition: box-shadow 0.22s ease;
+}
+.section-card:hover { box-shadow: var(--shadow-lift); }
+
+.section-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 22px 30px;
+  background: var(--cream-mid);
+  border-bottom: 1px solid var(--sand);
+}
+.section-head .s-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--brown); color: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.section-head .s-title {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 700;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+.section-head .s-sub {
+  font-size: 13px; color: var(--muted); margin-top: 1px;
+}
+.section-head .s-step {
+  margin-left: auto;
+  background: var(--amber);
+  color: var(--cream); border-radius: 20px;
+  padding: 4px 14px; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.section-body { padding: 30px; }
+
+/* ════════════════════════════════════════════
+   NETWORK CARDS
+════════════════════════════════════════════ */
+.network-intro {
+  font-size: 15px; color: var(--muted);
+  margin-bottom: 22px; line-height: 1.6;
+}
+
+.net-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+@media (max-width:680px) { .net-grid { grid-template-columns: repeat(2,1fr); } }
+
+.net-card {
+  border: 2px solid var(--sand);
+  border-radius: var(--radius);
+  padding: 28px 16px 22px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--cream);
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+.net-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(224,123,57,0.08), transparent 70%);
+  opacity: 0; transition: opacity 0.25s;
+}
+.net-card:hover::before, .net-card.active::before { opacity: 1; }
+.net-card:hover {
+  border-color: var(--amber);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(224,123,57,0.18);
+}
+.net-card.active {
+  border-color: var(--amber);
+  background: var(--amber-lite);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(224,123,57,0.22);
+}
+.net-card .check {
+  position: absolute; top: 10px; right: 10px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--amber); color: white;
+  font-size: 11px; display: none;
+  align-items: center; justify-content: center;
+  font-weight: 700;
+}
+.net-card.active .check { display: flex; }
+
+.net-emoji  { font-size: 42px; display: block; margin-bottom: 12px; line-height:1; }
+.net-name   {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 900;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+.net-card.active .net-name { color: var(--amber); }
+.net-tag    {
+  display: inline-block; margin-top: 6px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════════
+   FORM FIELDS
+════════════════════════════════════════════ */
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.field {
+  display: flex; flex-direction: column; gap: 7px;
+}
+.field label {
+  font-size: 13px; font-weight: 700;
+  color: var(--brown-mid);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+select, input[type="number"] {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--sand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 15px; font-weight: 500;
+  color: var(--ink);
+  background: var(--cream);
+  appearance: none; -webkit-appearance: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  cursor: pointer;
+}
+select:focus, input[type="number"]:focus {
+  outline: none;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(224,123,57,0.15);
+}
+input[type="number"]::placeholder { color: var(--sand-dark); }
+
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: '▾'; position: absolute;
+  right: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: 14px; pointer-events: none;
+}
+select { padding-right: 36px; }
+
+/* Services sub-grid */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px,1fr));
+  gap: 16px;
+}
+
+/* ════════════════════════════════════════════
+   DIVIDER
+════════════════════════════════════════════ */
+.divider {
+  display: flex; align-items: center; gap: 14px;
+  margin: 8px 0 24px;
+}
+.divider span {
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--sand);
+}
+
+/* ════════════════════════════════════════════
+   SUBMIT BUTTON
+════════════════════════════════════════════ */
+.btn-wrap { padding-top: 10px; }
+.btn-submit {
+  width: 100%;
+  padding: 20px 32px;
+  background: var(--brown);
+  color: var(--cream);
+  border: none; border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 900;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+  box-shadow: 0 6px 24px rgba(44,26,14,0.25);
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  position: relative; overflow: hidden;
+}
+.btn-submit::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent);
+}
+.btn-submit:hover {
+  background: var(--brown-mid);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(44,26,14,0.3);
+}
+.btn-submit:active { transform: translateY(0); }
+
+/* ════════════════════════════════════════════
+   RESULT PANEL
+════════════════════════════════════════════ */
+.result-wrap { margin-top: 36px; }
+
+.result-empty {
+  border: 2px dashed var(--sand);
+  border-radius: var(--radius-lg);
+  padding: 48px 32px;
+  text-align: center;
+  color: var(--muted);
+}
+.result-empty .r-icon { font-size: 48px; margin-bottom: 16px; }
+.result-empty h3 {
+  font-family: var(--font-display);
+  font-size: 22px; color: var(--sand-dark); margin-bottom: 8px;
+}
+.result-empty p { font-size: 15px; }
+
+/* Leave result */
+.result-leave {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-float);
+  animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
+}
+.result-leave .r-banner {
+  background: var(--rose);
+  padding: 28px 36px;
+  display: flex; align-items: center; gap: 20px;
+}
+.result-leave .r-emoji { font-size: 52px; flex-shrink: 0; line-height: 1; }
+.result-leave .r-verdict {
+  font-family: var(--font-display);
+  font-size: 32px; font-weight: 900;
+  color: white; letter-spacing: -0.02em; line-height: 1.1;
+}
+.result-leave .r-verdict em { font-style: italic; opacity: 0.85; font-size: 22px; display: block; }
+.result-leave .r-body {
+  background: var(--rose-lite);
+  border: 1px solid #f5c6c2;
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 28px 36px;
+  display: flex; gap: 32px; align-items: flex-start;
+}
+.result-leave .r-prob {
+  flex-shrink: 0; text-align: center;
+  background: white; border: 1px solid #f5c6c2;
+  border-radius: var(--radius-sm); padding: 16px 24px;
+}
+.result-leave .r-prob .prob-num {
+  font-family: var(--font-display);
+  font-size: 36px; font-weight: 900; color: var(--rose);
+}
+.result-leave .r-prob .prob-label {
+  font-size: 12px; color: var(--muted); font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px;
+}
+.result-leave .r-message h4 {
+  font-size: 17px; font-weight: 800; color: var(--rose); margin-bottom: 8px;
+}
+.result-leave .r-message p { font-size: 15px; color: var(--brown-mid); line-height: 1.65; }
+.r-actions {
+  display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;
+}
+.r-tag {
+  background: white; border: 1px solid #f5c6c2;
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 13px; font-weight: 600; color: var(--rose);
+}
+
+/* Stay result */
+.result-stay {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-float);
+  animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
+}
+.result-stay .r-banner {
+  background: var(--teal);
+  padding: 28px 36px;
+  display: flex; align-items: center; gap: 20px;
+}
+.result-stay .r-verdict {
+  font-family: var(--font-display);
+  font-size: 32px; font-weight: 900;
+  color: white; letter-spacing: -0.02em; line-height: 1.1;
+}
+.result-stay .r-verdict em { font-style: italic; opacity: 0.85; font-size: 22px; display: block; }
+.result-stay .r-body {
+  background: var(--teal-lite);
+  border: 1px solid #b3dada;
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 28px 36px;
+  display: flex; gap: 32px; align-items: flex-start;
+}
+.result-stay .r-prob {
+  flex-shrink: 0; text-align: center;
+  background: white; border: 1px solid #b3dada;
+  border-radius: var(--radius-sm); padding: 16px 24px;
+}
+.result-stay .r-prob .prob-num {
+  font-family: var(--font-display);
+  font-size: 36px; font-weight: 900; color: var(--teal);
+}
+.result-stay .r-prob .prob-label {
+  font-size: 12px; color: var(--muted); font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px;
+}
+.result-stay .r-message h4 {
+  font-size: 17px; font-weight: 800; color: var(--teal); margin-bottom: 8px;
+}
+.result-stay .r-message p { font-size: 15px; color: var(--brown-mid); line-height: 1.65; }
+.result-stay .r-tag {
+  background: white; border: 1px solid #b3dada;
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 13px; font-weight: 600; color: var(--teal);
+}
+
+@keyframes popIn {
+  from { opacity:0; transform: scale(0.94) translateY(16px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+/* Error result */
+.result-error {
+  border-radius: var(--radius); padding: 24px 28px;
+  background: #fffbeb; border: 1.5px solid #fbbf24;
+  font-size: 15px; color: var(--brown-mid); line-height: 1.6;
+}
+
+/* ════════════════════════════════════════════
+   ABOUT AUTHOR
+════════════════════════════════════════════ */
+.author-wrap {
+  position: relative; text-align: center;
+  margin-bottom: 44px;
+}
+.btn-author {
+  background: transparent;
+  border: 1.5px solid var(--sand-dark);
+  color: var(--muted); border-radius: 20px;
+  padding: 8px 20px; font-family: var(--font-body);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s;
+}
+.btn-author:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-lite); }
+.author-card {
+  display: none; position: absolute;
+  top: 48px; left: 50%; transform: translateX(-50%);
+  background: var(--cream);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius); padding: 22px 26px;
+  box-shadow: var(--shadow-float);
+  width: 290px; text-align: left; z-index: 300;
+}
+.author-card.show { display: block; animation: popIn 0.22s ease; }
+.author-card h4 {
+  font-family: var(--font-display); font-size: 17px;
+  font-weight: 900; color: var(--ink); margin-bottom: 10px;
+}
+.author-card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.author-card a { color: var(--amber); font-weight: 700; }
+
+/* ════════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════════ */
+footer {
+  background: var(--brown); color: var(--sand);
+  text-align: center; padding: 28px;
+  font-size: 13px; letter-spacing: 0.04em; line-height: 1.8;
+}
+footer strong { color: var(--amber); }
+
+/* ════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  nav { padding: 16px 20px; }
+  .page { padding: 32px 16px 60px; }
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { flex-direction: row; align-items: flex-start; }
+  .hero-stat { min-width: 120px; }
+  .result-leave .r-body, .result-stay .r-body { flex-direction: column; }
+  .result-leave .r-banner, .result-stay .r-banner { padding: 22px 24px; }
+  .result-leave .r-body, .result-stay .r-body { padding: 22px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP STRIP -->
+<div class="topstrip">
+  Powered by <span>Logistic Regression + SMOTE</span> &nbsp;·&nbsp;
+  32 Features &nbsp;·&nbsp; Calibrated Threshold: 25.72%
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-brand">
+    <div class="brand-mark">📡</div>
+    <div class="brand-text">
+      <h1>ChurnIQ</h1>
+      <p>TELCO RETENTION INTELLIGENCE</p>
+    </div>
+  </div>
+  <div class="nav-pill">
+    <span class="live-dot"></span>
+    Model Active
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ABOUT AUTHOR -->
+  <div class="author-wrap">
+    <button class="btn-author" onclick="toggleAuthor()">👨‍💻 About Author</button>
+    <div class="author-card" id="authorCard">
+      <h4>About the Author</h4>
+      <p>
+        <strong>Name:</strong>M Sachin<br>
+        <strong>Email:</strong>
+        <a href="mailto:sachinmuskudim@gmail.com">sachinmuskudim@gmail.com</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">📊 Churn Prediction System</div>
+      <h2>Will this customer<br><em>leave or stay?</em></h2>
+      <p>Enter the customer profile below. Our trained model will calculate their churn risk and tell you exactly what to do.</p>
+    </div>
+    <div class="hero-right">
+      <div class="hero-stat">
+        <div class="num">32</div>
+        <div class="label">FEATURES TRAINED</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">26.5%</div>
+        <div class="label">DATASET CHURN RATE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <form action="/predict" method="post">
+
+    <!-- ══ STEP 1: NETWORK ══ -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="s-icon">📶</div>
+        <div>
+          <div class="s-title">Telecom Partner</div>
+          <div class="s-sub">Choose the customer's network provider</div>
+        </div>
+        <span class="s-step">Step 01</span>
+      </div>
+      <div class="section-body">
+        <p class="network-intro">
+          Select the network first. Each partner is independently encoded — Airtel is the baseline (all zeros in the model).
+        </p>
+        <input type="hidden" name="Networks" id="networkInput" value="Airtel"/>
+        <div class="net-grid">
+
+          <div class="net-card active" data-value="Airtel">
+            <div class="check">✓</div>
+            <span class="net-emoji">🔴</span>
+            <div class="net-name">Airtel</div>
+            <span class="net-tag">Baseline</span>
+          </div>
+
+          <div class="net-card" data-value="BSNL">
+            <div class="check">✓</div>
+            <span class="net-emoji">🟠</span>
+            <div class="net-name">BSNL</div>
+            <span class="net-tag">Partner_BSNL</span>
+          </div>
+
+          <div class="net-card" data-value="Idea">
+            <div class="check">✓</div>
+            <span class="net-emoji">🟣</span>
+            <div class="net-name">VI-Idea</div>
+            <span class="net-tag">Partner_VI-!dea</span>
+          </div>
+
+          <div class="net-card" data-value="Jio">
+            <div class="check">✓</div>
+            <span class="net-emoji">🔵</span>
+            <div class="net-name">Jio</div>
+            <span class="net-tag">Partner_Jio</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STEP 2: CUSTOMER DETAILS ══ -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="s-icon">👤</div>
+        <div>
+          <div class="s-title">Customer Profile</div>
+          <div class="s-sub">Demographics and account information</div>
+        </div>
+        <span class="s-step">Step 02</span>
+      </div>
+      <div class="section-body">
+        <div class="field-grid">
+
+          <div class="field">
+            <label>Gender</label>
+            <div class="select-wrap">
+              <select name="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Senior Citizen</label>
+            <div class="select-wrap">
+              <select name="SeniorCitizen">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Has Partner</label>
+            <div class="select-wrap">
+              <select name="Partner">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Has Dependents</label>
+            <div class="select-wrap">
+              <select name="Dependents">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Tenure (months)</label>
+            <input type="number" name="tenure" min="0" max="120"
+                   placeholder="e.g. 24" required/>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STEP 3: SERVICES ══ -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="s-icon">📱</div>
+        <div>
+          <div class="s-title">Services Subscribed</div>
+          <div class="s-sub">Phone, internet and add-on services</div>
+        </div>
+        <span class="s-step">Step 03</span>
+      </div>
+      <div class="section-body">
+
+        <div class="divider"><span>Phone Services</span></div>
+        <div class="field-grid" style="margin-bottom:24px;">
+
+          <div class="field">
+            <label>Phone Service</label>
+            <div class="select-wrap">
+              <select name="PhoneService">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Multiple Lines</label>
+            <div class="select-wrap">
+              <select name="MultipleLines">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="No phone service">No phone service</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Internet Service</label>
+            <div class="select-wrap">
+              <select name="InternetService">
+                <option value="DSL">DSL</option>
+                <option value="Fiber optic">Fiber optic</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Contract Type</label>
+            <div class="select-wrap">
+              <select name="Contract">
+                <option value="Month-to-month">Month-to-month</option>
+                <option value="One year">One year</option>
+                <option value="Two year">Two year</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="divider"><span>Online Add-ons</span></div>
+        <div class="services-grid">
+
+          <div class="field">
+            <label>Online Security</label>
+            <div class="select-wrap">
+              <select name="OnlineSecurity">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="No internet service">No internet service</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Online Backup</label>
+            <div class="select-wrap">
+              <select name="OnlineBackup">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="No internet service">No internet service</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Device Protection</label>
+            <div class="select-wrap">
+              <select name="DeviceProtection">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="No internet service">No internet service</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Tech Support</label>
+            <div class="select-wrap">
+              <select name="TechSupport">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="No internet service">No internet service</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Streaming TV</label>
+            <div class="select-wrap">
+              <select name="StreamingTV">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="No internet service">No internet service</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Streaming Movies</label>
+            <div class="select-wrap">
+              <select name="StreamingMovies">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+                <option value="No internet service">No internet service</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STEP 4: BILLING ══ -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="s-icon">💳</div>
+        <div>
+          <div class="s-title">Billing & Payment</div>
+          <div class="s-sub">Charges and payment details</div>
+        </div>
+        <span class="s-step">Step 04</span>
+      </div>
+      <div class="section-body">
+        <div class="field-grid">
+
+          <div class="field">
+            <label>Paperless Billing</label>
+            <div class="select-wrap">
+              <select name="PaperlessBilling">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Payment Method</label>
+            <div class="select-wrap">
+              <select name="PaymentMethod">
+                <option value="Electronic check">Electronic check</option>
+                <option value="Mailed check">Mailed check</option>
+                <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                <option value="Credit card (automatic)">Credit card (automatic)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Monthly Charges ($)</label>
+            <input type="number" name="MonthlyCharges"
+                   min="0" step="0.01" placeholder="e.g. 65.00" required/>
+          </div>
+
+          <div class="field">
+            <label>
+              Total Charges ($)
+              <span style="font-weight:400;color:var(--sand-dark);font-size:11px;text-transform:none;"> — 0 = auto</span>
+            </label>
+            <input type="number" name="TotalCharges"
+                   min="0" step="0.01" placeholder="Auto if 0" value="0"/>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SUBMIT ══ -->
+    <div class="btn-wrap">
+      <button type="submit" class="btn-submit">
+        🔍 &nbsp; Predict Churn Risk
+      </button>
+    </div>
+
+  </form>
+
+  <!-- ══ RESULT ══ -->
+  <div class="result-wrap">
+    {% if prediction %}
+
+      {% if churn_class == 'leave' %}
+      <div class="result-leave">
+        <div class="r-banner">
+          <div class="r-emoji">⚠️</div>
+          <div class="r-verdict">
+            Customer Will Leave
+            <em>High churn risk detected</em>
+          </div>
+        </div>
+        <div class="r-body">
+          <div class="r-prob">
+            <div class="prob-num">{{ detail }}</div>
+            <div class="prob-label">Churn Probability</div>
+          </div>
+          <div class="r-message">
+            <h4>Recommended Actions</h4>
+            <p>
+              This customer shows a high probability of churning based on their profile.
+              Consider reaching out with a personalised retention offer, contract upgrade,
+              or loyalty discount before they cancel.
+            </p>
+            <div class="r-actions">
+              <span class="r-tag">📞 Call customer</span>
+              <span class="r-tag">🎁 Offer discount</span>
+              <span class="r-tag">📄 Upgrade contract</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% elif churn_class == 'stay' %}
+      <div class="result-stay">
+        <div class="r-banner">
+          <div class="r-emoji">✅</div>
+          <div class="r-verdict">
+            Customer Will Stay
+            <em>Low churn risk — customer is stable</em>
+          </div>
+        </div>
+        <div class="r-body">
+          <div class="r-prob">
+            <div class="prob-num">{{ detail }}</div>
+            <div class="prob-label">Retention Probability</div>
+          </div>
+          <div class="r-message">
+            <h4>Customer is Retained</h4>
+            <p>
+              This customer has a low churn risk based on their usage pattern and contract.
+              Continue providing excellent service and consider loyalty rewards to
+              strengthen the relationship further.
+            </p>
+            <div class="r-actions">
+              <span class="r-tag">🌟 Loyalty reward</span>
+              <span class="r-tag">📊 Monitor usage</span>
+              <span class="r-tag">💬 Engagement campaign</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% else %}
+      <div class="result-error">⚠️ {{ prediction }}</div>
+      {% endif %}
+
+    {% else %}
+      <div class="result-empty">
+        <div class="r-icon">🔮</div>
+        <h3>Awaiting Prediction</h3>
+        <p>Fill in the customer profile above and click <strong>Predict Churn Risk</strong>.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div><!-- /page -->
+
+<footer>
+  <strong>ChurnIQ</strong> — Telco Customer Retention Intelligence<br>
+  Logistic Regression · SMOTE Balancing · L2 Normalizer · 32 Features · Threshold 25.72%
+</footer>
+
+<script>
+  // ── Network card selection
+  const netCards = document.querySelectorAll('.net-card');
+  const netInput = document.getElementById('networkInput');
+
+  netCards.forEach(card => {
+    card.addEventListener('click', () => {
+      netCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      netInput.value = card.dataset.value;
+    });
+  });
+
+  // ── About Author toggle
+  function toggleAuthor() {
+    document.getElementById('authorCard').classList.toggle('show');
+  }
+  document.addEventListener('click', e => {
+    const card = document.getElementById('authorCard');
+    const btn  = document.querySelector('.btn-author');
+    if (card && !card.contains(e.target) && !btn.contains(e.target)) {
+      card.classList.remove('show');
+    }
+  });
+</script>
+</body>
+</html>
